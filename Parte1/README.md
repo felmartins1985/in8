@@ -71,4 +71,3 @@ A ordenação é aplicada após coletar todas as páginas, garantindo que o resu
 | `rating` | Avaliação em estrelas (0–5) |
 | `reviews` | Número de avaliações |
 | `link` | URL da página do produto |
-| `imageUrl` | URL da imagem do produto |
