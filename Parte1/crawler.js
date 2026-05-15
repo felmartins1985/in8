@@ -1,27 +1,32 @@
 import * as cheerio from 'cheerio';
 import { writeFileSync } from 'fs';
+import 'dotenv/config';
 
-const BASE_URL = 'https://webscraper.io/test-sites/e-commerce/static/computers/laptops';
-const LENOVO_KEYWORDS = ['lenovo'];
+const BASE_URL = process.env.BASE_URL;
+const BRAND_KEYWORD = process.env.BRAND_KEYWORD;
+const REQUEST_TIMEOUT_MS = parseInt(process.env.REQUEST_TIMEOUT_MS, 10);
+const RATE_LIMIT_MS = parseInt(process.env.RATE_LIMIT_MS, 10);
+const MAX_RETRIES = parseInt(process.env.MAX_RETRIES, 10);
+const OUTPUT_FILE = process.env.OUTPUT_FILE;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function isLenovo({ name, description }) {
   const text = `${name} ${description}`.toLowerCase();
-  return LENOVO_KEYWORDS.some(kw => text.includes(kw));
+  return text.includes(BRAND_KEYWORD);
 }
 
 async function fetchPage(url, attempt = 1) {
   const res = await fetch(url, {
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     headers: { 'Accept': 'text/html' },
   });
 
   if (res.status === 200) return res.text();
 
-  if ((res.status === 429 || res.status >= 500) && attempt < 3) {
+  if ((res.status === 429 || res.status >= 500) && attempt < MAX_RETRIES) {
     const delay = 2000 * attempt;
-    console.warn(`  HTTP ${res.status} — retrying in ${delay}ms (attempt ${attempt}/3)`);
+    console.warn(`  HTTP ${res.status} — retrying in ${delay}ms (attempt ${attempt}/${MAX_RETRIES})`); 
     await sleep(delay);
     return fetchPage(url, attempt + 1);
   }
@@ -83,7 +88,7 @@ async function crawl() {
   const results = parsePage(firstHtml).filter(isLenovo);
 
   for (let page = 2; page <= totalPages; page++) {
-    await sleep(1000);
+    await sleep(RATE_LIMIT_MS);
     console.log(`Fetching page ${page}/${totalPages}...`);
     const html = await fetchPage(`${BASE_URL}?page=${page}`);
     parsePage(html).filter(isLenovo).forEach(p => results.push(p));
@@ -106,7 +111,7 @@ async function crawl() {
     console.log();
   });
 
-  writeFileSync('results.json', JSON.stringify(results, null, 2), 'utf8');
+  writeFileSync(OUTPUT_FILE, JSON.stringify(results, null, 2), 'utf8');
   console.log('Resultados salvos em results.json');
 }
 

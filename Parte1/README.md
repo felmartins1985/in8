@@ -6,12 +6,36 @@ Crawler em JavaScript/Node.js que coleta todos os notebooks da marca **Lenovo** 
 
 ## Como executar
 
+1. Instale as dependências:
+
 ```bash
 npm install
+```
+
+2. Configure as variáveis de ambiente:
+
+```bash
+cp .env.example .env
+```
+
+3. Execute o crawler:
+
+```bash
 node crawler.js
 ```
 
-O resultado é impresso no terminal e salvo em `results.json`.
+O resultado é impresso no terminal e salvo no arquivo definido em `OUTPUT_FILE` (padrão: `results.json`).
+
+### Variáveis de ambiente
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `BASE_URL` | URL do site | URL base do crawler |
+| `BRAND_KEYWORD` | `lenovo` | Marca a filtrar |
+| `REQUEST_TIMEOUT_MS` | `15000` | Timeout por requisição (ms) |
+| `RATE_LIMIT_MS` | `1000` | Pausa entre páginas (ms) |
+| `MAX_RETRIES` | `3` | Tentativas em erro transitório |
+| `OUTPUT_FILE` | `results.json` | Arquivo de saída |
 
 ### Requisitos
 
@@ -63,12 +87,11 @@ A ordenação é aplicada após coletar todas as páginas, garantindo que o resu
 
 ## Campos coletados
 
-| Campo | Descrição |
-|---|---|
-| `name` | Nome completo do produto |
-| `price` | Preço em dólares (float) |
-| `description` | Especificações técnicas |
-| `rating` | Avaliação em estrelas (0–5) |
-| `reviews` | Número de avaliações |
-| `link` | URL da página do produto |
-| `imageUrl` | URL da imagem do produto |
+| Campo         | Descrição                   |
+| ------------- | --------------------------- |
+| `name`        | Nome completo do produto    |
+| `price`       | Preço em dólares (float)    |
+| `description` | Especificações técnicas     |
+| `rating`      | Avaliação em estrelas (0–5) |
+| `reviews`     | Número de avaliações        |
+| `link`        | URL da página do produto    |
